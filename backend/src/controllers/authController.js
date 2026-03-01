@@ -17,7 +17,6 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'Password must be at least 8 characters and contain uppercase, lowercase, numbers, and a special character.' });
         }
 
-        const userExists = await User.findOne({ email });
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });
         }
@@ -33,6 +32,10 @@ const registerUser = async (req, res) => {
         });
 
         if (user) {
+            // 🎉 Send Welcome Email asynchronously (don't await it so we don't slow down the response)
+            const emailService = require('../services/emailService');
+            emailService.sendWelcomeEmail(user.email, user.name);
+
             res.status(201).json({
                 _id: user._id,
                 name: user.name,
