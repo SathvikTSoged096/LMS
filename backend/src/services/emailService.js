@@ -8,21 +8,15 @@ class EmailService {
 
     async init() {
         try {
-            // Generate a fake testing account created specifically for developers
-            // We'll use Ethereal Email which lets us test without spamming real inboxes
-            let testAccount = await nodemailer.createTestAccount();
-
             this.transporter = nodemailer.createTransport({
-                host: "smtp.ethereal.email",
-                port: 587,
-                secure: false, // true for 465, false for other ports
+                service: 'gmail',
                 auth: {
-                    user: testAccount.user, // generated ethereal user
-                    pass: testAccount.pass, // generated ethereal password
+                    user: process.env.SMTP_USER,
+                    pass: process.env.SMTP_PASS,
                 },
             });
 
-            console.log(`📧 Email service initialized. Catch test emails at: https://ethereal.email`);
+            console.log(`📧 Email service initialized using Gmail.`);
         } catch (error) {
             console.error('Failed to initialize email service:', error);
         }
@@ -36,7 +30,7 @@ class EmailService {
 
         try {
             const info = await this.transporter.sendMail({
-                from: '"Artisan LMS" <noreply@artisanlms.com>', 
+                from: `"Artisan LMS" <${process.env.SMTP_USER}>`, 
                 to: userEmail,
                 subject: "Welcome to Artisan LMS! 🎓",
                 html: `
