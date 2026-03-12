@@ -5,9 +5,18 @@ const path = require('path');
 const fs = require('fs');
 
 // Ensure upload directory exists
-const uploadDir = path.join(__dirname, '..', '..', 'public', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+const isVercel = !!process.env.VERCEL;
+const uploadDir = isVercel
+    ? path.join('/tmp', 'uploads')
+    : path.join(__dirname, '..', '..', 'public', 'uploads');
+
+try {
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+        console.log(`Upload directory created at: ${uploadDir}`);
+    }
+} catch (err) {
+    console.warn('Warning: Could not create upload directory. Native uploads might fail.', err.message);
 }
 
 // Configure multer storage
