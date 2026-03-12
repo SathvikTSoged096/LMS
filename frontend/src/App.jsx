@@ -165,7 +165,13 @@ const DashboardLayout = ({ defaultView = 'dashboard', renderContent }) => {
               <span className="text-xs font-black text-indigo-500 lg:hidden uppercase tracking-widest">LMS</span>
               <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400">
                 {isAdmin ? (
-                  <span className="text-slate-400 hidden sm:inline">LMS Admin <span className="text-slate-300 dark:text-slate-600 mx-1">/</span> Sprint 1</span>
+                  <span className="text-slate-400 hidden sm:inline flex items-center">
+                    LMS Admin
+                    <span className="text-slate-300 dark:text-slate-600 mx-2">/</span>
+                    <span className="text-slate-900 dark:text-white font-bold">
+                      {navItems.find(n => n.id === activeView)?.label || 'Overview'}
+                    </span>
+                  </span>
                 ) : (
                   <h1 className="text-lg lg:text-xl font-bold text-slate-800 dark:text-white capitalize tracking-tight">
                     {navItems.find(n => n.id === activeView)?.label || 'Dashboard'}
