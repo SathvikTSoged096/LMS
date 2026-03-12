@@ -3,15 +3,20 @@ const pg = require('pg'); // Force import at top level for bundlers
 
 let sequelize;
 
-if (!process.env.DATABASE_URL) {
-  console.error('❌ CRITICAL ERROR: DATABASE_URL is missing from environment variables!');
-  // In serverless environments, we create a dummy instance to prevent top-level import crashes
-  sequelize = new Sequelize('postgres://localhost:5432/dummy', {
-    dialect: 'postgres',
-    dialectModule: pg,
-    logging: false
-  });
-} else {
+const getSequelize = () => {
+  if (sequelize) return sequelize;
+
+  if (!process.env.DATABASE_URL) {
+    console.error('❌ DATABASE_URL is missing!');
+    // Use a placeholder to prevent crashes, but it won't connect
+    sequelize = new Sequelize('postgres://localhost:5432/dummy', {
+      dialect: 'postgres',
+      dialectModule: pg,
+      logging: false
+    });
+    return sequelize;
+  }
+
   sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
     dialectModule: pg, // CRITICAL FIX for Vercel/Serverless
@@ -23,20 +28,27 @@ if (!process.env.DATABASE_URL) {
     },
     logging: false
   });
-}
+
+  return sequelize;
+};
 
 const connectDB = async () => {
+  const instance = getSequelize();
   if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is not defined.');
+    throw new Error('DATABASE_URL is not defined.');
   }
   try {
-    await sequelize.authenticate();
-    console.log('PostgreSQL Connected (Neon)');
+    await instance.authenticate();
+    console.log('PostgreSQL Connected');
   } catch (error) {
-    console.error(`Database Connection Error: ${error.message}`);
+    console.error(`PostgreSQL Connection Error: ${error.message}`);
     // Do not process.exit(1) in serverless environments as it causes 500 errors
     throw error;
   }
 };
 
-module.exports = { sequelize, connectDB };
+// Export a proxy or a getter-based object to ensure models get the instance when they need it
+module.exports = {
+  get sequelize() { return getSequelize(); },
+  connectDB
+};
