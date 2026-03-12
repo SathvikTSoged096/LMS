@@ -30,6 +30,12 @@ app.use(express.json());
 // Lazy Connection Middleware - Optimizes for Vercel cold starts
 let isDbConnected = false;
 app.use(async (req, res, next) => {
+    // Debug log for environment variables in Vercel logs
+    if (!isDbConnected) {
+        console.log(`[DEBUG] DATABASE_URL present: ${!!process.env.DATABASE_URL}`);
+        console.log(`[DEBUG] NODE_ENV: ${process.env.NODE_ENV}`);
+    }
+
     if (!isDbConnected && !req.path.startsWith('/api/health')) {
         try {
             await connectDB();
@@ -60,6 +66,7 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
         dbConnected: isDbConnected,
+        hasDbUrl: !!process.env.DATABASE_URL, // Critical debug info
         env: process.env.NODE_ENV,
         vercel: !!process.env.VERCEL
     });
