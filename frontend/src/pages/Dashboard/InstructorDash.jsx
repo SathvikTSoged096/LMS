@@ -58,6 +58,19 @@ const InstructorDash = ({ currentView = 'dashboard' }) => {
         }
     };
 
+    const handleDeleteQuiz = async (quizId, subjectId) => {
+        if (!confirm('Delete this quiz? This cannot be undone.')) return;
+        try {
+            await api.delete(`/quizzes/${quizId}`);
+            setQuizzesBySubject(prev => ({
+                ...prev,
+                [subjectId]: (prev[subjectId] || []).filter(q => (q._id || q.id) !== quizId)
+            }));
+        } catch (error) {
+            alert(error.response?.data?.message || 'Failed to delete quiz.');
+        }
+    };
+
     const handleCreateSubject = async (e) => {
         e.preventDefault();
         try {
@@ -293,7 +306,7 @@ const InstructorDash = ({ currentView = 'dashboard' }) => {
                                     <div className="p-6">
                                         <div className="flex items-center justify-between mb-4">
                                             <span className="text-sm font-bold text-slate-500">{quizzes.length} Quiz{quizzes.length !== 1 ? 'zes' : ''}</span>
-                                            <button onClick={() => navigate(`/instructor/subject/${subject._id}`)}
+                                            <button onClick={() => navigate(`/instructor/subject/${subject._id}?tab=quizzes`)}
                                                 className="text-xs font-black px-4 py-2 rounded-xl bg-slate-50 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 border border-slate-100 transition-colors">
                                                 + Add Quiz
                                             </button>
@@ -312,7 +325,16 @@ const InstructorDash = ({ currentView = 'dashboard' }) => {
                                                             <p className="text-sm font-bold text-slate-800">{quiz.title}</p>
                                                             <p className="text-xs text-slate-400 mt-0.5">{quiz.questions?.length || 0} Questions • MCQ</p>
                                                         </div>
-                                                        <span className={`text-xs font-black px-3 py-1.5 rounded-xl text-white ${theme.bg}`}>Q{qIdx + 1}</span>
+                                                        <div className="flex items-center gap-1">
+                                                            <button onClick={() => navigate(`/instructor/subject/${subject._id}?tab=quizzes&edit=${quiz._id}`)}
+                                                                className="p-2 text-indigo-500 hover:bg-indigo-50 rounded-xl transition-colors" title="Edit Quiz">
+                                                                <Edit2 size={14} />
+                                                            </button>
+                                                            <button onClick={() => handleDeleteQuiz(quiz._id, subject._id)}
+                                                                className="p-2 text-red-400 hover:bg-red-50 rounded-xl transition-colors" title="Delete Quiz">
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>

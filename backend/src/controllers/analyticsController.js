@@ -1,6 +1,4 @@
-const Enrollment = require('../models/Enrollment');
-const Result = require('../models/Result');
-const User = require('../models/User');
+const { Enrollment, Result, User } = require('../models');
 
 // @desc    Get student rankings for a specific subject
 // @route   GET /api/analytics/subject/:id/rankings
@@ -10,16 +8,20 @@ const getSubjectRankings = async (req, res) => {
         const subjectId = req.params.id;
 
         // Get all enrollments for this subject
-        const enrollments = await Enrollment.find({ subjectId }).populate('studentId', 'name email');
+        const enrollments = await Enrollment.findAll({
+            where: { subjectId },
+            include: [{ model: User, as: 'student', attributes: ['id', 'name', 'email'] }]
+        });
 
         // Get all quiz results for this subject
-        const results = await Result.find({ subjectId });
+        const results = await Result.findAll({ where: { subjectId } });
 
         const rankings = enrollments.map(enrollment => {
-            const studentIdStr = enrollment.studentId._id.toString();
+            const plain = enrollment.toJSON();
+            const studentId = plain.student.id;
 
             // Find all results for this student in this subject
-            const studentResults = results.filter(r => r.studentId.toString() === studentIdStr);
+            const studentResults = results.filter(r => r.studentId === studentId);
 
             // Calculate avg quiz percentage
             let avgQuizPct = 0;
@@ -28,15 +30,15 @@ const getSubjectRankings = async (req, res) => {
                 avgQuizPct = totalPct / studentResults.length;
             }
 
-            const completionPct = enrollment.percentageCompleted || 0;
+            const completionPct = plain.percentageCompleted || 0;
 
             // Ranking formula: 70% Quiz + 30% Completion
             const finalScore = (avgQuizPct * 0.7) + (completionPct * 0.3);
 
             return {
-                studentId: enrollment.studentId._id,
-                name: enrollment.studentId.name,
-                email: enrollment.studentId.email,
+                studentId: plain.student.id,
+                name: plain.student.name,
+                email: plain.student.email,
                 averageQuizScore: avgQuizPct.toFixed(2),
                 completionPercentage: completionPct.toFixed(2),
                 finalRankingScore: finalScore.toFixed(2)
@@ -57,15 +59,18 @@ const getSubjectRankings = async (req, res) => {
 // @access  Private/Admin
 const getCollegeRankings = async (req, res) => {
     try {
-        const students = await User.find({ role: 'STUDENT' }).select('name email');
-        const enrollments = await Enrollment.find();
-        const results = await Result.find();
+        const students = await User.findAll({
+            where: { role: 'STUDENT' },
+            attributes: ['id', 'name', 'email']
+        });
+        const enrollments = await Enrollment.findAll();
+        const results = await Result.findAll();
 
         const collegeRankings = students.map(student => {
-            const studentIdStr = student._id.toString();
+            const studentId = student.id;
 
-            const myEnrollments = enrollments.filter(e => e.studentId.toString() === studentIdStr);
-            const myResults = results.filter(r => r.studentId.toString() === studentIdStr);
+            const myEnrollments = enrollments.filter(e => e.studentId === studentId);
+            const myResults = results.filter(r => r.studentId === studentId);
 
             let avgCompletion = 0;
             if (myEnrollments.length > 0) {
@@ -80,7 +85,7 @@ const getCollegeRankings = async (req, res) => {
             const finalScore = (avgQuiz * 0.7) + (avgCompletion * 0.3);
 
             return {
-                studentId: student._id,
+                studentId: student.id,
                 name: student.name,
                 email: student.email,
                 enrolledCount: myEnrollments.length,
@@ -88,7 +93,7 @@ const getCollegeRankings = async (req, res) => {
                 completionPercentage: avgCompletion.toFixed(2),
                 finalRankingScore: finalScore.toFixed(2)
             };
-        }).filter(s => s.enrolledCount > 0); // Only rank students with at least 1 enrollment
+        }).filter(s => s.enrolledCount > 0);
 
         collegeRankings.sort((a, b) => parseFloat(b.finalRankingScore) - parseFloat(a.finalRankingScore));
 

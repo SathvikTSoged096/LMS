@@ -1,8 +1,10 @@
-const User = require('../models/User');
+const { User } = require('../models');
 
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({}).select('-password');
+        const users = await User.findAll({
+            attributes: { exclude: ['password'] }
+        });
         res.json(users);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -12,17 +14,17 @@ const getAllUsers = async (req, res) => {
 const updateUserRole = async (req, res) => {
     try {
         const { role } = req.body;
-        const user = await User.findById(req.params.id);
+        const user = await User.findByPk(req.params.id);
 
         if (user) {
             user.role = role || user.role;
-            const updatedUser = await user.save();
+            await user.save();
             res.json({
-                _id: updatedUser._id,
-                name: updatedUser.name,
-                email: updatedUser.email,
-                role: updatedUser.role,
-                status: updatedUser.status
+                _id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                status: user.status
             });
         } else {
             res.status(404).json({ message: 'User not found' });
@@ -34,17 +36,17 @@ const updateUserRole = async (req, res) => {
 
 const toggleUserStatus = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findByPk(req.params.id);
 
         if (user) {
             user.status = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-            const updatedUser = await user.save();
+            await user.save();
             res.json({
-                _id: updatedUser._id,
-                name: updatedUser.name,
-                email: updatedUser.email,
-                role: updatedUser.role,
-                status: updatedUser.status
+                _id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                status: user.status
             });
         } else {
             res.status(404).json({ message: 'User not found' });

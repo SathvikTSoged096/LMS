@@ -1,17 +1,51 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const enrollmentSchema = new mongoose.Schema({
-    studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', required: true },
-    progressPointer: {
-        unit: { type: Number, default: 0 },
-        chapter: { type: Number, default: 0 },
-        section: { type: Number, default: 0 }
+const Enrollment = sequelize.define('Enrollment', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
     },
-    percentageCompleted: { type: Number, default: 0 }
-}, { timestamps: true });
+    studentId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'users', key: 'id' }
+    },
+    subjectId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'subjects', key: 'id' }
+    },
+    progressUnit: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    progressChapter: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    progressSection: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+    },
+    percentageCompleted: {
+        type: DataTypes.FLOAT,
+        defaultValue: 0
+    }
+}, {
+    tableName: 'enrollments',
+    timestamps: true,
+    indexes: [
+        { unique: true, fields: ['studentId', 'subjectId'] }
+    ]
+});
 
-// Ensure a student can only enroll once in a specific subject
-enrollmentSchema.index({ studentId: 1, subjectId: 1 }, { unique: true });
+const _origEnrollmentToJSON = Enrollment.prototype.toJSON;
+Enrollment.prototype.toJSON = function () {
+    const values = _origEnrollmentToJSON.call(this);
+    values._id = String(values.id);
+    return values;
+};
 
-module.exports = mongoose.model('Enrollment', enrollmentSchema);
+module.exports = Enrollment;

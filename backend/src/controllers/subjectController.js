@@ -1,12 +1,27 @@
-const Subject = require('../models/Subject');
+const { Subject, User } = require('../models');
 
 // @desc    Get all subjects
 // @route   GET /api/subjects
 // @access  Private (All authenticated users)
 const getSubjects = async (req, res) => {
     try {
-        const subjects = await Subject.find({}).populate('instructorId', 'name email');
-        res.json(subjects);
+        const subjects = await Subject.findAll({
+            include: [{
+                model: User,
+                as: 'instructor',
+                attributes: ['id', 'name', 'email']
+            }]
+        });
+        // Transform to match MongoDB populate format: instructorId becomes the populated object
+        const result = subjects.map(s => {
+            const plain = s.toJSON();
+            if (plain.instructor) {
+                plain.instructorId = { ...plain.instructor, _id: String(plain.instructor.id) };
+                delete plain.instructor;
+            }
+            return plain;
+        });
+        res.json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -17,9 +32,20 @@ const getSubjects = async (req, res) => {
 // @access  Private
 const getSubjectById = async (req, res) => {
     try {
-        const subject = await Subject.findById(req.params.id).populate('instructorId', 'name email');
+        const subject = await Subject.findByPk(req.params.id, {
+            include: [{
+                model: User,
+                as: 'instructor',
+                attributes: ['id', 'name', 'email']
+            }]
+        });
         if (subject) {
-            res.json(subject);
+            const plain = subject.toJSON();
+            if (plain.instructor) {
+                plain.instructorId = { ...plain.instructor, _id: String(plain.instructor.id) };
+                delete plain.instructor;
+            }
+            res.json(plain);
         } else {
             res.status(404).json({ message: 'Subject not found' });
         }
@@ -35,7 +61,7 @@ const createSubject = async (req, res) => {
     try {
         const { title, description, units, thumbnail } = req.body;
 
-        const subject = new Subject({
+        const subject = await Subject.create({
             title,
             description: description || '',
             thumbnail: thumbnail || undefined,
@@ -43,8 +69,7 @@ const createSubject = async (req, res) => {
             units: units || []
         });
 
-        const createdSubject = await subject.save();
-        res.status(201).json(createdSubject);
+        res.status(201).json(subject);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -57,11 +82,11 @@ const updateSubject = async (req, res) => {
     try {
         const { title, description, units, thumbnail } = req.body;
 
-        const subject = await Subject.findById(req.params.id);
+        const subject = await Subject.findByPk(req.params.id);
 
         if (subject) {
             // Check if user is the instructor of this subject or an admin
-            if (subject.instructorId.toString() !== req.user.id && req.user.role !== 'ADMIN') {
+            if (subject.instructorId !== req.user.id && req.user.role !== 'ADMIN') {
                 return res.status(401).json({ message: 'Not authorized to update this subject' });
             }
 
@@ -70,8 +95,11 @@ const updateSubject = async (req, res) => {
             if (thumbnail) subject.thumbnail = thumbnail;
             if (units) subject.units = units;
 
-            const updatedSubject = await subject.save();
-            res.json(updatedSubject);
+            // Mark JSONB as changed so Sequelize persists it
+            subject.changed('units', true);
+
+            await subject.save();
+            res.json(subject);
         } else {
             res.status(404).json({ message: 'Subject not found' });
         }
@@ -85,14 +113,14 @@ const updateSubject = async (req, res) => {
 // @access  Private/Instructor or Admin
 const deleteSubject = async (req, res) => {
     try {
-        const subject = await Subject.findById(req.params.id);
+        const subject = await Subject.findByPk(req.params.id);
 
         if (subject) {
-            if (subject.instructorId.toString() !== req.user.id && req.user.role !== 'ADMIN') {
+            if (subject.instructorId !== req.user.id && req.user.role !== 'ADMIN') {
                 return res.status(401).json({ message: 'Not authorized to delete this subject' });
             }
 
-            await subject.deleteOne();
+            await subject.destroy();
             res.json({ message: 'Subject removed' });
         } else {
             res.status(404).json({ message: 'Subject not found' });

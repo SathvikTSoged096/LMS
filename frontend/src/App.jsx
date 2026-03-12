@@ -13,7 +13,7 @@ import SubjectReader from './pages/Reader/SubjectReader';
 import QuizTaker from './pages/Assessment/QuizTaker';
 import ResultsViewer from './pages/Assessment/ResultsViewer';
 
-import { LogOut, Sun, Moon } from 'lucide-react';
+import { LogOut, Sun, Moon, Monitor } from 'lucide-react';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -24,30 +24,52 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 const ThemeToggle = () => {
-  const [isDark, setIsDark] = React.useState(false);
+  // theme: 'light' | 'dark' | 'system'
+  const [theme, setTheme] = React.useState('system');
 
-  React.useEffect(() => {
-    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-      setIsDark(true);
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    if (isDark) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      setIsDark(false);
+  const applyTheme = (themeValue) => {
+    if (themeValue === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', prefersDark);
     } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      setIsDark(true);
+      document.documentElement.classList.toggle('dark', themeValue === 'dark');
     }
   };
 
+  React.useEffect(() => {
+    const saved = localStorage.getItem('theme');
+    const initial = saved || 'system';
+    setTheme(initial);
+    applyTheme(initial);
+  }, []);
+
+  // Listen for OS theme changes when in system mode
+  React.useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => { if (theme === 'system') applyTheme('system'); };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [theme]);
+
+  const cycleTheme = () => {
+    const order = ['light', 'dark', 'system'];
+    const next = order[(order.indexOf(theme) + 1) % 3];
+    setTheme(next);
+    localStorage.setItem('theme', next);
+    applyTheme(next);
+  };
+
+  const icon = theme === 'dark'
+    ? <Moon size={20} className="text-indigo-400" />
+    : theme === 'light'
+      ? <Sun size={20} className="text-amber-400" />
+      : <Monitor size={20} className="text-emerald-400" />;
+
+  const label = theme === 'system' ? 'System' : theme === 'dark' ? 'Dark' : 'Light';
+
   return (
-    <button onClick={toggleTheme} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-400 transition-colors" title="Toggle Light/Dark Mode">
-      {isDark ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} />}
+    <button onClick={cycleTheme} className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-slate-400 transition-colors" title={`Theme: ${label} (click to change)`}>
+      {icon}
     </button>
   );
 };
@@ -255,17 +277,17 @@ function AppContent() {
         <Routes>
           <Route path="/" element={
             <div className="w-full min-h-[calc(100vh-64px)] overflow-hidden flex flex-col items-center justify-center px-6 relative z-10">
-              
+
               {/* Full-width Cinematic Background Image */}
               <div className="absolute inset-0 z-0">
-                <img 
-                  src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2850" 
-                  alt="Students collaborating" 
+                <img
+                  src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2850"
+                  alt="Students collaborating"
                   className="w-full h-full object-cover"
                 />
                 {/* Deep dark overlay to ensure text readability */}
                 <div className="absolute inset-0 bg-[#0a0f18]/85 backdrop-blur-[2px]"></div>
-                
+
                 {/* Glowing subtle gradients to blend the image */}
                 <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-[#0f1117] to-transparent"></div>
                 <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-[#0f1117] to-transparent"></div>
@@ -288,9 +310,9 @@ function AppContent() {
                 {/* Headline */}
                 <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black leading-[1.05] tracking-tighter mb-6">
                   <span className="text-white drop-shadow-xl">The smarter way to</span><br />
-                  <span style={{ 
-                    background: 'linear-gradient(135deg, #a5b4fc, #67e8f9, #d8b4fe)', 
-                    WebkitBackgroundClip: 'text', 
+                  <span style={{
+                    background: 'linear-gradient(135deg, #a5b4fc, #67e8f9, #d8b4fe)',
+                    WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     filter: 'drop-shadow(0 0 30px rgba(165,180,252,0.3))'
                   }}>

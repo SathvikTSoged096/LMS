@@ -1,21 +1,40 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const quizSchema = new mongoose.Schema({
-    subjectId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subject', required: true },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    title: { type: String, required: true },
-    questions: [{
-        questionText: { type: String, required: true },
-        options: {
-            type: [String],
-            validate: [arrayLimit, 'Options array must contain exactly 4 items']
-        }, // Array of exactly 4 strings
-        correctOptionIndex: { type: Number, required: true, min: 0, max: 3 }
-    }],
-}, { timestamps: true });
+const Quiz = sequelize.define('Quiz', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    subjectId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'subjects', key: 'id' }
+    },
+    createdBy: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'users', key: 'id' }
+    },
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    questions: {
+        type: DataTypes.JSONB,
+        allowNull: false
+    }
+}, {
+    tableName: 'quizzes',
+    timestamps: true
+});
 
-function arrayLimit(val) {
-    return val.length === 4;
-}
+const _origQuizToJSON = Quiz.prototype.toJSON;
+Quiz.prototype.toJSON = function () {
+    const values = _origQuizToJSON.call(this);
+    values._id = String(values.id);
+    return values;
+};
 
-module.exports = mongoose.model('Quiz', quizSchema);
+module.exports = Quiz;

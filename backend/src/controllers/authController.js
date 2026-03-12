@@ -1,6 +1,7 @@
-const User = require('../models/User');
+const { User } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const generateUserId = require('../utils/generateUserId');
 
 const generateToken = (id, role, status) => {
     return jwt.sign({ id, role, status }, process.env.JWT_SECRET, {
@@ -17,7 +18,7 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'Password must be at least 8 characters and contain uppercase, lowercase, numbers, and a special character.' });
         }
 
-        const userExists = await User.findOne({ email });
+        const userExists = await User.findOne({ where: { email } });
         if (userExists) {
             return res.status(400).json({ message: 'User already exists' });
         }
@@ -25,7 +26,10 @@ const registerUser = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        const userId = await generateUserId(role || 'STUDENT');
+
         const user = await User.create({
+            userId,
             name,
             email,
             password: hashedPassword,
@@ -38,12 +42,13 @@ const registerUser = async (req, res) => {
             emailService.sendWelcomeEmail(user.email, user.name);
 
             res.status(201).json({
-                _id: user._id,
+                _id: String(user.id),
+                userId: user.userId,
                 name: user.name,
                 email: user.email,
                 role: user.role,
                 status: user.status,
-                token: generateToken(user._id, user.role, user.status),
+                token: generateToken(user.id, user.role, user.status),
             });
         } else {
             res.status(400).json({ message: 'Invalid user data' });
@@ -57,19 +62,20 @@ const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ where: { email } });
 
         if (user && (await bcrypt.compare(password, user.password))) {
             if (user.status === 'INACTIVE') {
                 return res.status(403).json({ message: 'Account is inactive. Contact admin.' });
             }
             res.json({
-                _id: user._id,
+                _id: String(user.id),
+                userId: user.userId,
                 name: user.name,
                 email: user.email,
                 role: user.role,
                 status: user.status,
-                token: generateToken(user._id, user.role, user.status),
+                token: generateToken(user.id, user.role, user.status),
             });
         } else {
             res.status(401).json({ message: 'Invalid email or password' });
@@ -81,7 +87,9 @@ const loginUser = async (req, res) => {
 
 const getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select('-password');
+        const user = await User.findByPk(req.user.id, {
+            attributes: { exclude: ['password'] }
+        });
         res.json(user);
     } catch (error) {
         res.status(500).json({ message: error.message });

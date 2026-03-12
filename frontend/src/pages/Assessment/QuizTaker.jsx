@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../services/api';
-import { CheckCircle2, AlertCircle, ArrowLeft, Trophy, Target, BookOpen } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowLeft, Trophy, Target, BookOpen, Flag } from 'lucide-react';
 import MathJaxRenderer from '../../components/renderers/MathJaxRenderer';
 
 const SUBJECT_IMAGES = [
@@ -19,6 +19,8 @@ const QuizTaker = () => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [result, setResult] = useState(null);
+    const [flaggedQuestions, setFlaggedQuestions] = useState({});
+    const [flagInput, setFlagInput] = useState({ open: null, reason: '' });
 
     useEffect(() => { fetchQuizzes(); }, [subjectId]);
 
@@ -44,6 +46,22 @@ const QuizTaker = () => {
         const newAnswers = [...answers];
         newAnswers[qIndex] = optionIndex;
         setAnswers(newAnswers);
+    };
+
+    const handleFlagQuestion = async (qIndex) => {
+        const reason = flagInput.reason.trim();
+        if (!reason) return alert('Please enter a reason for flagging.');
+        try {
+            await api.post('/flags', {
+                quizId: activeQuiz._id,
+                questionIndex: qIndex,
+                reason
+            });
+            setFlaggedQuestions(prev => ({ ...prev, [qIndex]: reason }));
+            setFlagInput({ open: null, reason: '' });
+        } catch (error) {
+            alert(error.response?.data?.message || 'Error flagging question');
+        }
     };
 
     const handleSubmit = async () => {
@@ -162,10 +180,52 @@ const QuizTaker = () => {
                                     <span className="flex-shrink-0 w-9 h-9 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-black text-sm flex items-center justify-center shadow-lg shadow-indigo-500/20">
                                         {qIndex + 1}
                                     </span>
-                                    <div className="text-lg font-bold text-slate-900 leading-snug pt-1">
+                                    <div className="flex-1 text-lg font-bold text-slate-900 leading-snug pt-1">
                                         <MathJaxRenderer content={q.questionText} />
                                     </div>
+                                    <button
+                                        onClick={() => setFlagInput(prev => ({ reason: '', open: prev.open === qIndex ? null : qIndex }))}
+                                        title={flaggedQuestions[qIndex] ? 'Already flagged' : 'Flag this question'}
+                                        className={`flex-shrink-0 p-2 rounded-xl transition-all ${flaggedQuestions[qIndex]
+                                                ? 'text-red-500 bg-red-50'
+                                                : 'text-slate-400 hover:text-red-500 hover:bg-red-50'
+                                            }`}
+                                    >
+                                        <Flag size={18} />
+                                    </button>
                                 </div>
+                                {flagInput.open === qIndex && !flaggedQuestions[qIndex] && (
+                                    <div className="mt-4 ml-13 p-4 bg-red-50 border border-red-200 rounded-2xl">
+                                        <p className="text-sm font-semibold text-red-700 mb-2">Why are you flagging this question?</p>
+                                        <textarea
+                                            value={flagInput.reason}
+                                            onChange={(e) => setFlagInput(prev => ({ ...prev, reason: e.target.value }))}
+                                            placeholder="e.g. Wrong answer, unclear question, junk content..."
+                                            className="w-full p-3 text-sm border border-red-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-300 resize-none"
+                                            rows={2}
+                                            maxLength={500}
+                                        />
+                                        <div className="flex gap-2 mt-2">
+                                            <button
+                                                onClick={() => handleFlagQuestion(qIndex)}
+                                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-xl transition-colors"
+                                            >
+                                                Submit Flag
+                                            </button>
+                                            <button
+                                                onClick={() => setFlagInput({ open: null, reason: '' })}
+                                                className="px-4 py-2 bg-white border border-red-200 text-red-600 text-sm font-bold rounded-xl hover:bg-red-50 transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                                {flaggedQuestions[qIndex] && flagInput.open === qIndex && (
+                                    <div className="mt-4 ml-13 p-3 bg-red-50 border border-red-200 rounded-2xl">
+                                        <p className="text-sm text-red-600">✓ Flagged: {flaggedQuestions[qIndex]}</p>
+                                    </div>
+                                )}
                             </div>
                             <div className="px-8 pb-8 space-y-3">
                                 {q.options.map((opt, oIndex) => {
@@ -175,8 +235,8 @@ const QuizTaker = () => {
                                             key={oIndex}
                                             onClick={() => handleSelectOption(qIndex, oIndex)}
                                             className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 text-left transition-all duration-200 ${isSelected
-                                                    ? 'border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-500/10'
-                                                    : 'border-slate-100 bg-slate-50 hover:border-indigo-200 hover:bg-white'
+                                                ? 'border-indigo-500 bg-indigo-50 shadow-lg shadow-indigo-500/10'
+                                                : 'border-slate-100 bg-slate-50 hover:border-indigo-200 hover:bg-white'
                                                 }`}
                                         >
                                             <div className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-slate-300'

@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 
-const Result = sequelize.define('Result', {
+const Flag = sequelize.define('Flag', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -17,36 +17,31 @@ const Result = sequelize.define('Result', {
         allowNull: false,
         references: { model: 'quizzes', key: 'id' }
     },
-    subjectId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: { model: 'subjects', key: 'id' }
-    },
-    score: {
+    questionIndex: {
         type: DataTypes.INTEGER,
         allowNull: false
     },
-    percentage: {
-        type: DataTypes.FLOAT,
+    reason: {
+        type: DataTypes.STRING(500),
         allowNull: false
     },
-    answers: {
-        type: DataTypes.JSONB,
-        defaultValue: []
+    status: {
+        type: DataTypes.ENUM('PENDING', 'REVIEWED', 'DISMISSED'),
+        defaultValue: 'PENDING'
     }
 }, {
-    tableName: 'results',
+    tableName: 'flags',
     timestamps: true,
     indexes: [
-        { unique: true, fields: ['studentId', 'quizId'] }
+        { unique: true, fields: ['studentId', 'quizId', 'questionIndex'] }
     ]
 });
 
-const _origResultToJSON = Result.prototype.toJSON;
-Result.prototype.toJSON = function () {
-    const values = _origResultToJSON.call(this);
+const _origFlagToJSON = Flag.prototype.toJSON;
+Flag.prototype.toJSON = function () {
+    const values = _origFlagToJSON.call(this);
     values._id = String(values.id);
     return values;
 };
 
-module.exports = Result;
+module.exports = Flag;

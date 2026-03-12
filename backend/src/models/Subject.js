@@ -1,24 +1,43 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const subjectSchema = new mongoose.Schema({
-    title: { type: String, required: true },
-    description: { type: String },
-    instructorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    thumbnail: { type: String, default: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' },
-    units: [{
-        unitNumber: Number,
-        title: String,
-        chapters: [{
-            chapterNumber: Number,
-            title: String,
-            sections: [{
-                sectionNumber: Number,
-                title: String,
-                videoUrl: String,
-                paragraphs: [String] // Array of text content; can contain LaTeX or SPICE netlists
-            }]
-        }]
-    }]
-}, { timestamps: true });
+const Subject = sequelize.define('Subject', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    title: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    description: {
+        type: DataTypes.TEXT,
+        defaultValue: ''
+    },
+    instructorId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: { model: 'users', key: 'id' }
+    },
+    thumbnail: {
+        type: DataTypes.STRING,
+        defaultValue: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+    },
+    units: {
+        type: DataTypes.JSONB,
+        defaultValue: []
+    }
+}, {
+    tableName: 'subjects',
+    timestamps: true
+});
 
-module.exports = mongoose.model('Subject', subjectSchema);
+const _origSubjectToJSON = Subject.prototype.toJSON;
+Subject.prototype.toJSON = function () {
+    const values = _origSubjectToJSON.call(this);
+    values._id = String(values.id);
+    return values;
+};
+
+module.exports = Subject;
