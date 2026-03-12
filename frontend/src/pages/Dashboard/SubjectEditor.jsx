@@ -54,6 +54,20 @@ const SubjectEditor = () => {
                 ]);
                 setSubject({ ...subRes.data, units: subRes.data.units || [] });
                 setQuizzes(quizRes.data);
+
+                // Auto-load quiz for editing if ?edit=quizId is present
+                const editId = searchParams.get('edit');
+                if (editId && quizRes.data.length > 0) {
+                    const quizToEdit = quizRes.data.find(q => String(q._id || q.id) === editId);
+                    if (quizToEdit) {
+                        setEditingQuizId(quizToEdit._id || quizToEdit.id);
+                        setQuizTitle(quizToEdit.title);
+                        const qs = quizToEdit.questions || [];
+                        setNumQuestions(qs.length);
+                        setNumOptions(qs[0]?.options?.length || 3);
+                        setQuestions(qs.map(q => ({ questionText: q.questionText, options: [...q.options], correctOptionIndex: q.correctOptionIndex || 0 })));
+                    }
+                }
             } catch (error) {
                 console.error('Error fetching subject', error);
                 alert('Failed to load subject data.');
