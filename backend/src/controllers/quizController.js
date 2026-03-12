@@ -8,8 +8,8 @@ const createQuiz = async (req, res) => {
         const { subjectId, title, questions } = req.body;
 
         // Server-side validation
-        if (!questions || questions.length !== 5) {
-            return res.status(400).json({ message: 'A quiz must contain exactly 5 questions for MVP constraints' });
+        if (!questions || questions.length < 1) {
+            return res.status(400).json({ message: 'A quiz must contain at least 1 question' });
         }
 
         const quiz = await Quiz.create({
@@ -31,9 +31,13 @@ const createQuiz = async (req, res) => {
 const getSubjectQuizzes = async (req, res) => {
     try {
         const quizzes = await Quiz.findAll({
-            where: { subjectId: req.params.subjectId },
-            attributes: { exclude: [] }
+            where: { subjectId: req.params.subjectId }
         });
+
+        // Instructors/Admins get full data; students get answers stripped
+        if (req.user.role === 'INSTRUCTOR' || req.user.role === 'ADMIN') {
+            return res.json(quizzes);
+        }
 
         // Strip correctOptionIndex from questions to prevent cheating
         const sanitized = quizzes.map(q => {
@@ -55,7 +59,7 @@ const getSubjectQuizzes = async (req, res) => {
 // @access  Private/Student
 const submitQuizUrl = async (req, res) => {
     try {
-        const { answers } = req.body; // Array of selected indices, e.g., [0, 2, 1, 3, 0]
+        const { answers } = req.body;
         const quizId = req.params.id;
         const studentId = req.user.id;
 
@@ -112,7 +116,59 @@ const getMyResults = async (req, res) => {
                 { model: Subject, as: 'subject', attributes: ['id', 'title'] }
             ]
         });
-        res.json(results);
+        // Transform: nest quiz/subject under quizId/subjectId for Mongoose populate compat
+        const transformed = results.map(r => {
+            const plain = r.toJSON();
+            if (plain.quiz) {
+                plain.quizId = { ...plain.quiz, _id: String(plain.quiz.id) };
+                delete plain.quiz;
+            }
+            if (plain.subject) {
+                plain.subjectId = { ...plain.subject, _id: String(plain.subject.id) };
+                delete plain.subject;
+            }
+            return plain;
+        });
+        res.json(transformed);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Update a quiz
+// @route   PUT /api/quizzes/:id
+// @access  Private/Instructor
+const updateQuiz = async (req, res) => {
+    try {
+        const quiz = await Quiz.findByPk(req.params.id);
+        if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
+
+        const { title, questions } = req.body;
+        if (questions && questions.length < 1) {
+            return res.status(400).json({ message: 'A quiz must contain at least 1 question' });
+        }
+
+        if (title) quiz.title = title;
+        if (questions) {
+            quiz.questions = questions;
+            quiz.changed('questions', true);
+        }
+        await quiz.save();
+        res.json(quiz);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Delete a quiz
+// @route   DELETE /api/quizzes/:id
+// @access  Private/Instructor
+const deleteQuiz = async (req, res) => {
+    try {
+        const quiz = await Quiz.findByPk(req.params.id);
+        if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
+        await quiz.destroy();
+        res.json({ message: 'Quiz deleted' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -122,5 +178,7 @@ module.exports = {
     createQuiz,
     getSubjectQuizzes,
     submitQuizUrl,
-    getMyResults
+    getMyResults,
+    updateQuiz,
+    deleteQuiz
 };

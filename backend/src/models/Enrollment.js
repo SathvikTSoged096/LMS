@@ -37,11 +37,15 @@ const Enrollment = sequelize.define('Enrollment', {
     tableName: 'enrollments',
     timestamps: true,
     indexes: [
-        {
-            unique: true,
-            fields: ['studentId', 'subjectId']
-        }
+        { unique: true, fields: ['studentId', 'subjectId'] }
     ]
 });
+
+const _origEnrollmentToJSON = Enrollment.prototype.toJSON;
+Enrollment.prototype.toJSON = function () {
+    const values = _origEnrollmentToJSON.call(this);
+    values._id = String(values.id);
+    return values;
+};
 
 module.exports = Enrollment;

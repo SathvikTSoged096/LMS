@@ -293,7 +293,7 @@ const InstructorDash = ({ currentView = 'dashboard' }) => {
                                     <div className="p-6">
                                         <div className="flex items-center justify-between mb-4">
                                             <span className="text-sm font-bold text-slate-500">{quizzes.length} Quiz{quizzes.length !== 1 ? 'zes' : ''}</span>
-                                            <button onClick={() => navigate(`/instructor/subject/${subject._id}`)}
+                                            <button onClick={() => navigate(`/instructor/subject/${subject._id}?tab=quizzes`)}
                                                 className="text-xs font-black px-4 py-2 rounded-xl bg-slate-50 hover:bg-indigo-50 text-slate-600 hover:text-indigo-700 border border-slate-100 transition-colors">
                                                 + Add Quiz
                                             </button>

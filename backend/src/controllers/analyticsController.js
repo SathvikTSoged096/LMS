@@ -17,7 +17,8 @@ const getSubjectRankings = async (req, res) => {
         const results = await Result.findAll({ where: { subjectId } });
 
         const rankings = enrollments.map(enrollment => {
-            const studentId = enrollment.student.id;
+            const plain = enrollment.toJSON();
+            const studentId = plain.student.id;
 
             // Find all results for this student in this subject
             const studentResults = results.filter(r => r.studentId === studentId);
@@ -29,15 +30,15 @@ const getSubjectRankings = async (req, res) => {
                 avgQuizPct = totalPct / studentResults.length;
             }
 
-            const completionPct = enrollment.percentageCompleted || 0;
+            const completionPct = plain.percentageCompleted || 0;
 
             // Ranking formula: 70% Quiz + 30% Completion
             const finalScore = (avgQuizPct * 0.7) + (completionPct * 0.3);
 
             return {
-                studentId: enrollment.student.id,
-                name: enrollment.student.name,
-                email: enrollment.student.email,
+                studentId: plain.student.id,
+                name: plain.student.name,
+                email: plain.student.email,
                 averageQuizScore: avgQuizPct.toFixed(2),
                 completionPercentage: completionPct.toFixed(2),
                 finalRankingScore: finalScore.toFixed(2)
@@ -92,7 +93,7 @@ const getCollegeRankings = async (req, res) => {
                 completionPercentage: avgCompletion.toFixed(2),
                 finalRankingScore: finalScore.toFixed(2)
             };
-        }).filter(s => s.enrolledCount > 0); // Only rank students with at least 1 enrollment
+        }).filter(s => s.enrolledCount > 0);
 
         collegeRankings.sort((a, b) => parseFloat(b.finalRankingScore) - parseFloat(a.finalRankingScore));
 

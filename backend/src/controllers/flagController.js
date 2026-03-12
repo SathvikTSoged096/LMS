@@ -57,7 +57,21 @@ const getFlags = async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
-        res.json(flags);
+        // Transform: nest student/quiz under studentId/quizId for Mongoose populate compat
+        const transformed = flags.map(f => {
+            const plain = f.toJSON();
+            if (plain.student) {
+                plain.studentId = { ...plain.student, _id: String(plain.student.id) };
+                delete plain.student;
+            }
+            if (plain.quiz) {
+                plain.quizId = { ...plain.quiz, _id: String(plain.quiz.id) };
+                delete plain.quiz;
+            }
+            return plain;
+        });
+
+        res.json(transformed);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

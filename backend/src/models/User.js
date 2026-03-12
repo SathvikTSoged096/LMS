@@ -37,4 +37,12 @@ const User = sequelize.define('User', {
     timestamps: true
 });
 
+// Add _id (string) to JSON output for MongoDB compat
+const _origUserToJSON = User.prototype.toJSON;
+User.prototype.toJSON = function () {
+    const values = _origUserToJSON.call(this);
+    values._id = String(values.id);
+    return values;
+};
+
 module.exports = User;

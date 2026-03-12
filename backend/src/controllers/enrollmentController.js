@@ -49,7 +49,22 @@ const getMyEnrollments = async (req, res) => {
                 attributes: ['id', 'title', 'description', 'thumbnail']
             }]
         });
-        res.json(enrollments);
+        // Transform: nest subject data under 'subjectId' to match Mongoose populate format
+        const result = enrollments.map(e => {
+            const plain = e.toJSON();
+            if (plain.subject) {
+                plain.subjectId = { ...plain.subject, _id: String(plain.subject.id) };
+                delete plain.subject;
+            }
+            // Map progress fields to nested progressPointer for frontend compatibility
+            plain.progressPointer = {
+                unit: plain.progressUnit || 0,
+                chapter: plain.progressChapter || 0,
+                section: plain.progressSection || 0
+            };
+            return plain;
+        });
+        res.json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -79,7 +94,15 @@ const updateProgress = async (req, res) => {
         if (percentageCompleted !== undefined) enrollment.percentageCompleted = percentageCompleted;
 
         await enrollment.save();
-        res.json(enrollment);
+
+        // Return with progressPointer format for frontend compatibility
+        const plain = enrollment.toJSON();
+        plain.progressPointer = {
+            unit: plain.progressUnit || 0,
+            chapter: plain.progressChapter || 0,
+            section: plain.progressSection || 0
+        };
+        res.json(plain);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -33,4 +33,11 @@ const Subject = sequelize.define('Subject', {
     timestamps: true
 });
 
+const _origSubjectToJSON = Subject.prototype.toJSON;
+Subject.prototype.toJSON = function () {
+    const values = _origSubjectToJSON.call(this);
+    values._id = String(values.id);
+    return values;
+};
+
 module.exports = Subject;

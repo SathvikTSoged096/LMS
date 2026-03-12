@@ -38,11 +38,15 @@ const Result = sequelize.define('Result', {
     tableName: 'results',
     timestamps: true,
     indexes: [
-        {
-            unique: true,
-            fields: ['studentId', 'quizId']
-        }
+        { unique: true, fields: ['studentId', 'quizId'] }
     ]
 });
+
+const _origResultToJSON = Result.prototype.toJSON;
+Result.prototype.toJSON = function () {
+    const values = _origResultToJSON.call(this);
+    values._id = String(values.id);
+    return values;
+};
 
 module.exports = Result;

@@ -42,7 +42,7 @@ const registerUser = async (req, res) => {
             emailService.sendWelcomeEmail(user.email, user.name);
 
             res.status(201).json({
-                _id: user.id,
+                _id: String(user.id),
                 userId: user.userId,
                 name: user.name,
                 email: user.email,
@@ -69,7 +69,7 @@ const loginUser = async (req, res) => {
                 return res.status(403).json({ message: 'Account is inactive. Contact admin.' });
             }
             res.json({
-                _id: user.id,
+                _id: String(user.id),
                 userId: user.userId,
                 name: user.name,
                 email: user.email,

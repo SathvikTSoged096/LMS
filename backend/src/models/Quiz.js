@@ -30,4 +30,11 @@ const Quiz = sequelize.define('Quiz', {
     timestamps: true
 });
 
+const _origQuizToJSON = Quiz.prototype.toJSON;
+Quiz.prototype.toJSON = function () {
+    const values = _origQuizToJSON.call(this);
+    values._id = String(values.id);
+    return values;
+};
+
 module.exports = Quiz;

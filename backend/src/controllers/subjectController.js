@@ -12,7 +12,16 @@ const getSubjects = async (req, res) => {
                 attributes: ['id', 'name', 'email']
             }]
         });
-        res.json(subjects);
+        // Transform to match MongoDB populate format: instructorId becomes the populated object
+        const result = subjects.map(s => {
+            const plain = s.toJSON();
+            if (plain.instructor) {
+                plain.instructorId = { ...plain.instructor, _id: String(plain.instructor.id) };
+                delete plain.instructor;
+            }
+            return plain;
+        });
+        res.json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -31,7 +40,12 @@ const getSubjectById = async (req, res) => {
             }]
         });
         if (subject) {
-            res.json(subject);
+            const plain = subject.toJSON();
+            if (plain.instructor) {
+                plain.instructorId = { ...plain.instructor, _id: String(plain.instructor.id) };
+                delete plain.instructor;
+            }
+            res.json(plain);
         } else {
             res.status(404).json({ message: 'Subject not found' });
         }
@@ -80,6 +94,9 @@ const updateSubject = async (req, res) => {
             subject.description = description || subject.description;
             if (thumbnail) subject.thumbnail = thumbnail;
             if (units) subject.units = units;
+
+            // Mark JSONB as changed so Sequelize persists it
+            subject.changed('units', true);
 
             await subject.save();
             res.json(subject);
