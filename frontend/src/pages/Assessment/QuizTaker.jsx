@@ -105,7 +105,7 @@ const QuizTaker = () => {
                         You scored {result.score} out of {result.answers?.length || 5} questions correctly.
                     </p>
 
-                    <div className={`text-8xl font-black mb-10 ${isPassed ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <div className={`text-6xl sm:text-8xl font-black mb-10 ${isPassed ? 'text-emerald-400' : 'text-red-400'}`}>
                         {result.percentage}%
                     </div>
 
@@ -156,18 +156,18 @@ const QuizTaker = () => {
         return (
             <div className="min-h-screen bg-slate-50">
                 {/* Header */}
-                <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 px-6 py-4 flex items-center justify-between shadow-sm">
+                <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100 px-4 sm:px-6 py-4 flex items-center justify-between shadow-sm">
                     <button
                         onClick={() => setActiveQuiz(null)}
-                        className="flex items-center gap-2 text-slate-500 hover:text-slate-900 font-semibold text-sm transition-colors"
+                        className="flex items-center gap-1 sm:gap-2 text-slate-500 hover:text-slate-900 font-semibold text-xs sm:text-sm transition-colors"
                     >
-                        <ArrowLeft size={18} /> Back
+                        <ArrowLeft size={18} /> <span className="hidden sm:inline">Back</span>
                     </button>
-                    <div className="text-center">
-                        <p className="text-sm font-black text-slate-900">{activeQuiz.title}</p>
-                        <p className="text-xs text-slate-400 font-medium">{answeredCount}/{activeQuiz.questions.length} answered</p>
+                    <div className="text-center px-2">
+                        <p className="text-xs sm:text-sm font-black text-slate-900 leading-tight">{activeQuiz.title}</p>
+                        <p className="text-[10px] sm:text-xs text-slate-400 font-medium">{answeredCount}/{activeQuiz.questions.length} answered</p>
                     </div>
-                    <div className="w-20 h-2.5 rounded-full bg-slate-100 overflow-hidden">
+                    <div className="w-16 sm:w-20 h-2 sm:h-2.5 rounded-full bg-slate-100 overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full transition-all duration-500" style={{ width: `${progressPct}%` }}></div>
                     </div>
                 </div>
@@ -187,8 +187,8 @@ const QuizTaker = () => {
                                         onClick={() => setFlagInput(prev => ({ reason: '', open: prev.open === qIndex ? null : qIndex }))}
                                         title={flaggedQuestions[qIndex] ? 'Already flagged' : 'Flag this question'}
                                         className={`flex-shrink-0 p-2 rounded-xl transition-all ${flaggedQuestions[qIndex]
-                                                ? 'text-red-500 bg-red-50'
-                                                : 'text-slate-400 hover:text-red-500 hover:bg-red-50'
+                                            ? 'text-red-500 bg-red-50'
+                                            : 'text-slate-400 hover:text-red-500 hover:bg-red-50'
                                             }`}
                                     >
                                         <Flag size={18} />
@@ -276,18 +276,18 @@ const QuizTaker = () => {
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Hero */}
-            <div className="relative h-48 overflow-hidden">
+            <div className="relative h-40 lg:h-48 overflow-hidden">
                 <img src={SUBJECT_IMAGES[0]} alt="Assessments" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/90 via-slate-900/70 to-transparent flex items-center px-10">
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/90 via-slate-900/70 to-transparent flex items-center px-6 lg:px-10">
                     <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-indigo-300 mb-2">Assessment Hall</p>
-                        <h1 className="text-4xl font-black text-white">Choose a Quiz</h1>
-                        <p className="text-indigo-200 font-medium mt-1">{quizzes.length} assessment{quizzes.length !== 1 ? 's' : ''} available</p>
+                        <p className="text-[10px] lg:text-xs font-black uppercase tracking-widest text-indigo-300 mb-1 lg:mb-2">Assessment Hall</p>
+                        <h1 className="text-2xl lg:text-4xl font-black text-white">Choose a Quiz</h1>
+                        <p className="text-indigo-200 text-xs lg:text-sm font-medium mt-1">{quizzes.length} assessment{quizzes.length !== 1 ? 's' : ''} available</p>
                     </div>
                 </div>
                 <button
                     onClick={() => navigate('/dashboard')}
-                    className="absolute top-6 right-6 flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold text-sm px-5 py-2.5 rounded-full border border-white/20 transition-all"
+                    className="absolute top-4 lg:top-6 right-4 lg:right-6 flex items-center gap-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold text-xs lg:text-sm px-4 lg:px-5 py-2 lg:py-2.5 rounded-full border border-white/20 transition-all"
                 >
                     <ArrowLeft size={16} /> Dashboard
                 </button>

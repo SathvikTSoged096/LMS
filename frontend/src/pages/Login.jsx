@@ -33,7 +33,7 @@ const Login = () => {
     useEffect(() => {
         api.get('/stats')
             .then(res => setStats(res.data))
-            .catch(() => {});
+            .catch(() => { });
     }, []);
 
     const handleSubmit = async (e) => {
@@ -129,7 +129,7 @@ const Login = () => {
                         <span className="text-xl font-black text-white">LMS Platform</span>
                     </div>
 
-                    <h2 className="text-4xl font-black text-white mb-1 tracking-tight">Welcome back</h2>
+                    <h2 className="text-3xl sm:text-4xl font-black text-white mb-1 tracking-tight">Welcome back</h2>
                     <p className="text-white/40 font-medium mb-8">Sign in to your account to continue</p>
 
                     {/* One-click demo logins */}

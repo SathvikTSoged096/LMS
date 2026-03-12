@@ -240,37 +240,37 @@ const SubjectEditor = () => {
     return (
         <div className="max-w-5xl mx-auto p-6 space-y-8 pb-32">
             {/* Header */}
-            <div className="flex items-center justify-between sticky top-0 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md z-10 py-4 border-b border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-4">
-                    <button onClick={() => navigate('/dashboard')} className="p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors">
-                        <ArrowLeft size={24} />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between sticky top-0 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md z-10 py-4 gap-4 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                    <button onClick={() => navigate('/dashboard')} className="p-2 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors flex-shrink-0">
+                        <ArrowLeft size={20} className="sm:w-6 sm:h-6" />
                     </button>
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Manage Subject</h1>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">{subject.title}</p>
+                    <div className="min-w-0">
+                        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white truncate">Manage Subject</h1>
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 truncate">{subject.title}</p>
                     </div>
                 </div>
                 {activeTab === 'curriculum' && (
-                    <button onClick={handleSave} disabled={saving} className="btn-primary gap-2">
+                    <button onClick={handleSave} disabled={saving} className="w-full sm:w-auto btn-primary gap-2 text-sm py-2.5">
                         <Save size={18} /> {saving ? 'Saving...' : 'Save Changes'}
                     </button>
                 )}
             </div>
 
             {/* Tab Switcher */}
-            <div className="flex gap-2 bg-white dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="flex flex-col sm:flex-row gap-2 bg-white dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
                 <button
                     onClick={() => setActiveTab('curriculum')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-sm font-bold transition-all duration-200 ${activeTab === 'curriculum'
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${activeTab === 'curriculum'
                         ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25'
                         : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
                         }`}
                 >
-                    <BookOpen size={18} /> Curriculum ({subject.units?.length || 0} Units)
+                    <BookOpen size={18} /> Curriculum ({subject.units?.length || 0})
                 </button>
                 <button
                     onClick={() => setActiveTab('quizzes')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-sm font-bold transition-all duration-200 ${activeTab === 'quizzes'
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 ${activeTab === 'quizzes'
                         ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
                         : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
                         }`}

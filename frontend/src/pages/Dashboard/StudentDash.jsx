@@ -81,28 +81,28 @@ const StudentDash = ({ currentView = 'courses' }) => {
         return (
             <div className="space-y-8 animate-fade-in-up">
                 {/* Pinterest Hero Banner */}
-                <div className="relative h-52 rounded-[2rem] overflow-hidden group">
+                <div className="relative h-40 lg:h-52 rounded-2xl lg:rounded-[2rem] overflow-hidden group">
                     <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1400&q=80" alt="Studying" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/80 via-indigo-900/40 to-transparent flex items-center px-12">
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/80 via-indigo-900/40 to-transparent flex items-center px-6 lg:px-12">
                         <div>
-                            <p className="text-indigo-300 text-xs font-black uppercase tracking-widest mb-2">Student ID: {user?.userId}</p>
-                            <h1 className="text-4xl font-black text-white leading-tight">Welcome back! 👋</h1>
-                            <p className="text-indigo-200 font-medium mt-2">You're enrolled in {enrollments.length} course{enrollments.length !== 1 ? 's' : ''}.</p>
+                            <p className="text-indigo-300 text-[10px] lg:text-xs font-black uppercase tracking-widest mb-1 lg:mb-2">Student ID: {user?.userId}</p>
+                            <h1 className="text-2xl lg:text-4xl font-black text-white leading-tight">Welcome back! 👋</h1>
+                            <p className="text-indigo-200 text-sm lg:text-base font-medium mt-1 lg:mt-2">You're enrolled in {enrollments.length} course{enrollments.length !== 1 ? 's' : ''}.</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Stat Pills Row */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     {[
                         { label: 'Enrolled', value: enrollments.length, gradient: 'from-violet-500 to-indigo-600', emoji: '📚' },
                         { label: 'Quizzes Taken', value: results.length, gradient: 'from-emerald-400 to-teal-600', emoji: '🧠' },
                         { label: 'Avg Quiz Score', value: results.length > 0 ? `${(results.reduce((a, r) => a + r.percentage, 0) / results.length).toFixed(1)}%` : '—', gradient: 'from-amber-400 to-orange-500', emoji: '🏆' },
                     ].map((s, i) => (
-                        <div key={i} className={`bg-gradient-to-br ${s.gradient} p-6 rounded-3xl text-white hover:-translate-y-1 transition-all duration-300 shadow-lg`}>
-                            <div className="text-3xl mb-2">{s.emoji}</div>
-                            <p className="text-3xl font-black">{s.value}</p>
-                            <p className="text-sm text-white/75 font-semibold mt-1">{s.label}</p>
+                        <div key={i} className={`bg-gradient-to-br ${s.gradient} p-5 lg:p-6 rounded-3xl text-white hover:-translate-y-1 transition-all duration-300 shadow-lg`}>
+                            <div className="text-2xl lg:text-3xl mb-2">{s.emoji}</div>
+                            <p className="text-2xl lg:text-3xl font-black">{s.value}</p>
+                            <p className="text-xs lg:text-sm text-white/75 font-semibold mt-1">{s.label}</p>
                         </div>
                     ))}
                 </div>

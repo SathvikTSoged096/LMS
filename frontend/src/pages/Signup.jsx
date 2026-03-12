@@ -122,7 +122,7 @@ const Signup = () => {
                         <span className="text-xl font-black text-white">LMS Platform</span>
                     </div>
 
-                    <h2 className="text-4xl font-black text-white mb-1 tracking-tight">Create account</h2>
+                    <h2 className="text-3xl sm:text-4xl font-black text-white mb-1 tracking-tight">Create account</h2>
                     <p className="font-medium mb-8" style={{ color: 'rgba(255,255,255,0.35)' }}>
                         Already have an account?{' '}
                         <Link to="/login" className="text-indigo-400 font-bold hover:text-indigo-300 transition-colors">Sign in</Link>

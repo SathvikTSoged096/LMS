@@ -78,6 +78,7 @@ const ThemeToggle = () => {
 const DashboardLayout = ({ defaultView = 'dashboard', renderContent }) => {
   const [activeView, setActiveView] = useState(defaultView);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false); // New mobile menu state
   const { user, logout } = useAuth();
 
   if (!user) return <Navigate to="/login" replace />;
@@ -85,102 +86,108 @@ const DashboardLayout = ({ defaultView = 'dashboard', renderContent }) => {
   const isStudent = user.role === 'STUDENT';
   const isAdmin = user.role === 'ADMIN';
 
+  const navItems = isAdmin
+    ? [
+      { id: 'overview', label: 'Overview' },
+      { id: 'all-users', label: 'All Users' },
+      { id: 'students', label: 'Students' },
+      { id: 'instructors', label: 'Instructors' },
+      { id: 'rankings', label: 'Rankings' },
+      { id: 'statistics', label: 'Statistics' },
+      { id: 'activity', label: 'Activity Logs' }
+    ]
+    : [
+      { id: 'dashboard', label: 'Dashboard' },
+      { id: 'courses', label: 'My Courses' },
+      { id: 'tests', label: 'Assessments' },
+      { id: 'progress', label: 'Analytics' }
+    ];
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+      <div className="p-8 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+            <span className="text-xl font-bold text-white leading-none">L</span>
+          </div>
+          <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">LMS</span>
+        </div>
+      </div>
+
+      <nav className="flex-1 px-4 space-y-3">
+        {navItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => {
+              setActiveView(item.id);
+              setShowMobileMenu(false);
+            }}
+            className={`flex w-full items-center px-5 py-3.5 text-[15px] font-bold rounded-2xl transition-all duration-300 ${activeView === item.id ? 'bg-black text-white shadow-xl shadow-black/10 translate-x-1' : 'text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-900 w-full overflow-hidden font-sans transition-colors duration-300">
-      {/* Sidebar Navigation */}
-      <aside className="w-[280px] bg-slate-50 dark:bg-slate-900 flex flex-col hidden md:flex h-full transition-colors duration-300">
-        <div className="p-8 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-              <span className="text-xl font-bold text-white leading-none">L</span>
-            </div>
-            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">LMS</span>
-          </div>
-        </div>
-
-        <nav className="flex-1 px-4 space-y-3">
-          {/* Admin Links */}
-          {isAdmin && (
-            <>
-              {['overview', 'all-users', 'students', 'instructors', 'rankings', 'statistics', 'activity'].map((view) => {
-                const labels = { 'overview': 'Overview', 'all-users': 'All Users', 'students': 'Students', 'instructors': 'Instructors', 'rankings': 'Rankings', 'statistics': 'Statistics', 'activity': 'Activity Logs' };
-                return (
-                  <button
-                    key={view}
-                    onClick={() => setActiveView(view)}
-                    className={`flex w-full items-center px-5 py-3.5 text-[15px] font-bold rounded-2xl transition-all duration-300 ${activeView === view ? 'bg-black text-white shadow-xl shadow-black/10 translate-x-1' : 'text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
-                  >
-                    {labels[view]}
-                  </button>
-                );
-              })}
-            </>
-          )}
-
-          {/* Student/Instructor Links */}
-          {!isAdmin && (
-            <>
-              <button
-                onClick={() => setActiveView('dashboard')}
-                className={`flex w-full items-center px-5 py-3.5 text-[15px] font-bold rounded-2xl transition-all duration-300 ${activeView === 'dashboard' ? 'bg-black text-white shadow-xl shadow-black/10 translate-x-1' : 'text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
-              >
-                Dashboard
-              </button>
-              <button
-                onClick={() => setActiveView('courses')}
-                className={`flex w-full items-center px-5 py-3.5 text-[15px] font-bold rounded-2xl transition-all duration-300 ${activeView === 'courses' ? 'bg-black text-white shadow-xl shadow-black/10 translate-x-1' : 'text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
-              >
-                My Courses
-              </button>
-              <button
-                onClick={() => setActiveView('tests')}
-                className={`flex w-full items-center px-5 py-3.5 text-[15px] font-bold rounded-2xl transition-all duration-300 ${activeView === 'tests' ? 'bg-black text-white shadow-xl shadow-black/10 translate-x-1' : 'text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
-              >
-                Assessments
-              </button>
-              <button
-                onClick={() => setActiveView('progress')}
-                className={`flex w-full items-center px-5 py-3.5 text-[15px] font-bold rounded-2xl transition-all duration-300 ${activeView === 'progress' ? 'bg-black text-white shadow-xl shadow-black/10 translate-x-1' : 'text-slate-500 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-white'}`}
-              >
-                Analytics
-              </button>
-            </>
-          )}
-        </nav>
-
-        <div className="p-6 mt-auto">
-          {/* Sidebar footer logic removed as Logout is now strictly in the top nav */}
-        </div>
+      {/* Desktop Sidebar */}
+      <aside className="w-[280px] hidden lg:flex flex-col h-full border-r border-slate-100 dark:border-slate-800">
+        <SidebarContent />
       </aside>
 
+      {/* Mobile Sidebar Overlay */}
+      {showMobileMenu && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setShowMobileMenu(false)}></div>
+          <div className="absolute left-0 top-0 bottom-0 w-[240px] bg-slate-50 dark:bg-slate-900 shadow-2xl animate-fade-in-left">
+            <SidebarContent />
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
-      <main className="flex-1 h-full overflow-y-auto bg-white dark:bg-slate-900 rounded-l-[3rem] shadow-[-20px_0_40px_-20px_rgba(0,0,0,0.05)] border-l border-slate-100 dark:border-slate-800 transition-colors duration-300">
+      <main className="flex-1 h-full overflow-y-auto bg-white dark:bg-slate-900 lg:rounded-l-[3rem] lg:shadow-[-20px_0_40px_-20px_rgba(0,0,0,0.05)] lg:border-l border-slate-100 dark:border-slate-800 transition-colors duration-300 relative">
         {/* Top Header */}
-        <header className="h-24 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between px-10 w-full transition-all border-b border-transparent dark:border-slate-800">
-          <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400">
-            <span className="md:hidden font-bold text-indigo-500 mr-2">LMS</span>
-            {isAdmin ? (
-              <span className="text-slate-400">LMS Admin <span className="text-slate-300 dark:text-slate-600 mx-1">/</span> Sprint 1</span>
-            ) : (
-              <h1 className="text-xl font-bold text-slate-800 dark:text-white capitalize tracking-tight">
-                {activeView === 'dashboard' ? (user.role === 'INSTRUCTOR' ? 'Instructor Dashboard' : 'Dashboard') : activeView === 'courses' ? 'My Courses' : activeView === 'tests' ? 'Assessments' : activeView === 'progress' ? 'Analytics' : activeView === 'profile' ? 'My Profile' : 'Dashboard'}
-              </h1>
-            )}
+        <header className="h-20 lg:h-24 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between px-4 lg:px-10 w-full transition-all border-b border-slate-50 dark:border-slate-800">
+          <div className="flex items-center gap-3">
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setShowMobileMenu(true)}
+              className="lg:hidden p-2 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+            >
+              <ChevronDown size={20} className="rotate-90" />
+            </button>
+
+            <div className="flex flex-col">
+              <span className="text-xs font-black text-indigo-500 lg:hidden uppercase tracking-widest">LMS</span>
+              <div className="flex items-center text-sm font-medium text-slate-500 dark:text-slate-400">
+                {isAdmin ? (
+                  <span className="text-slate-400 hidden sm:inline">LMS Admin <span className="text-slate-300 dark:text-slate-600 mx-1">/</span> Sprint 1</span>
+                ) : (
+                  <h1 className="text-lg lg:text-xl font-bold text-slate-800 dark:text-white capitalize tracking-tight">
+                    {navItems.find(n => n.id === activeView)?.label || 'Dashboard'}
+                  </h1>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 lg:gap-4">
             <ThemeToggle />
 
             {/* User Dropdown */}
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-3 p-1.5 pr-4 rounded-full bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-colors"
+                className="flex items-center gap-2 lg:gap-3 p-1 rounded-full lg:pr-4 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white shadow-sm">
                   {user.name.substring(0, 2).toUpperCase()}
                 </div>
-                <span className="text-sm font-bold text-slate-700">{user.name}</span>
+                <span className="text-sm font-bold text-slate-700 dark:text-slate-200 hidden sm:inline">{user.name}</span>
                 <ChevronDown size={14} className={`text-slate-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`} />
               </button>
 
@@ -220,7 +227,7 @@ const DashboardLayout = ({ defaultView = 'dashboard', renderContent }) => {
         </header>
 
         {/* Page Content */}
-        <div className="p-8 w-full max-w-7xl mx-auto">
+        <div className="p-4 lg:p-8 w-full max-w-7xl mx-auto">
           {renderContent(activeView)}
         </div>
       </main>

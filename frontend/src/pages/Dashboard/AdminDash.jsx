@@ -126,16 +126,16 @@ const AdminDash = ({ currentView = 'overview' }) => {
                         <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                             <tr>
                                 {['Name', 'Email', 'Role', 'Status', 'Action'].map(h => (
-                                    <th key={h} className="px-6 py-4 text-left text-xs font-black text-slate-400 uppercase tracking-widest">{h}</th>
+                                    <th key={h} className="px-4 lg:px-6 py-4 text-left text-[10px] lg:text-xs font-black text-slate-400 uppercase tracking-widest">{h}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-slate-50">
                             {filteredUsers.map((u) => (
                                 <tr key={u._id} className="hover:bg-indigo-50/30 transition-colors group">
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center text-white text-sm font-extrabold shadow-sm">
+                                            <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center text-white text-xs lg:text-sm font-extrabold shadow-sm">
                                                 {u.name?.charAt(0)?.toUpperCase()}
                                             </div>
                                             <div className="flex flex-col">
@@ -297,18 +297,18 @@ const AdminDash = ({ currentView = 'overview' }) => {
 
     if (currentView === 'statistics') return (
         <div className="space-y-8 animate-fade-in-up">
-            <h2 className="text-3xl font-black text-slate-900">Platform Statistics</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <h2 className="text-2xl lg:text-3xl font-black text-slate-900">Platform Statistics</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                     { label: 'Total Users', value: users.length, color: 'from-violet-500 to-indigo-600', emoji: '👥' },
                     { label: 'Students', value: studentCount, color: 'from-emerald-400 to-teal-600', emoji: '🎓' },
                     { label: 'Instructors', value: instructorCount, color: 'from-amber-400 to-orange-600', emoji: '👨‍🏫' },
                     { label: 'Active Users', value: activeCount, color: 'from-pink-500 to-rose-600', emoji: '✅' },
                 ].map((stat, i) => (
-                    <div key={i} className={`bg-gradient-to-br ${stat.color} p-8 rounded-3xl shadow-xl text-white hover:-translate-y-1 transition-all duration-300`}>
-                        <div className="text-4xl mb-3">{stat.emoji}</div>
-                        <p className="text-5xl font-black mb-2">{stat.value}</p>
-                        <p className="text-sm text-white/80 font-semibold">{stat.label}</p>
+                    <div key={i} className={`bg-gradient-to-br ${stat.color} p-6 lg:p-8 rounded-3xl shadow-xl text-white hover:-translate-y-1 transition-all duration-300`}>
+                        <div className="text-3xl lg:text-4xl mb-3">{stat.emoji}</div>
+                        <p className="text-4xl lg:text-5xl font-black mb-2">{stat.value}</p>
+                        <p className="text-xs lg:text-sm text-white/80 font-semibold">{stat.label}</p>
                     </div>
                 ))}
             </div>
@@ -342,31 +342,31 @@ const AdminDash = ({ currentView = 'overview' }) => {
 
     // OVERVIEW (default)
     return (
-        <div className="space-y-8 animate-fade-in-up">
+        <div className="space-y-6 lg:space-y-8 animate-fade-in-up">
             {/* Hero Banner */}
-            <div className="relative rounded-[2rem] overflow-hidden h-56 group">
+            <div className="relative rounded-2xl lg:rounded-[2rem] overflow-hidden h-40 lg:h-56 group">
                 <img src={PINTEREST_IMAGES[0]} alt="Hero" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/80 via-slate-900/60 to-transparent flex items-center px-12">
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/80 via-slate-900/60 to-transparent flex items-center px-6 lg:px-12">
                     <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-indigo-300 mb-2">Admin Dashboard</p>
-                        <h1 className="text-4xl font-black text-white leading-tight">Welcome back,<br /><span className="text-indigo-300">Administrator</span></h1>
+                        <p className="text-[10px] lg:text-xs font-black uppercase tracking-widest text-indigo-300 mb-1 lg:mb-2">Admin Dashboard</p>
+                        <h1 className="text-2xl lg:text-4xl font-black text-white leading-tight">Welcome back,<br /><span className="text-indigo-300">Administrator</span></h1>
                     </div>
                 </div>
             </div>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
                 {[
                     { label: 'Total Users', value: users.length, gradient: 'from-violet-500 to-indigo-600', emoji: '👥' },
                     { label: 'Students', value: studentCount, gradient: 'from-emerald-400 to-teal-600', emoji: '🎓' },
                     { label: 'Instructors', value: instructorCount, gradient: 'from-amber-400 to-orange-500', emoji: '👨‍🏫' },
                     { label: 'Active Users', value: activeCount, gradient: 'from-pink-500 to-rose-500', emoji: '✅' },
                 ].map((s, i) => (
-                    <div key={i} className={`relative bg-gradient-to-br ${s.gradient} p-6 rounded-3xl shadow-lg text-white overflow-hidden hover:-translate-y-1 transition-all duration-300`}>
-                        <div className="text-3xl mb-3">{s.emoji}</div>
-                        <p className="text-4xl font-black">{s.value}</p>
-                        <p className="text-sm text-white/75 mt-1 font-semibold">{s.label}</p>
-                        <div className="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-white/10"></div>
+                    <div key={i} className={`relative bg-gradient-to-br ${s.gradient} p-5 lg:p-6 rounded-3xl shadow-lg text-white overflow-hidden hover:-translate-y-1 transition-all duration-300`}>
+                        <div className="text-2xl lg:text-3xl mb-2 lg:mb-3">{s.emoji}</div>
+                        <p className="text-3xl lg:text-4xl font-black">{s.value}</p>
+                        <p className="text-xs lg:text-sm text-white/75 mt-0.5 lg:mt-1 font-semibold">{s.label}</p>
+                        <div className="absolute -right-4 -bottom-4 w-20 lg:w-24 h-20 lg:h-24 rounded-full bg-white/10"></div>
                     </div>
                 ))}
             </div>

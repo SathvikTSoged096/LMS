@@ -150,32 +150,32 @@ const InstructorDash = ({ currentView = 'dashboard' }) => {
         return (
             <div className="space-y-8 animate-fade-in-up">
                 {/* Hero */}
-                <div className="relative h-52 rounded-[2rem] overflow-hidden group">
+                <div className="relative h-40 lg:h-52 rounded-2xl lg:rounded-[2rem] overflow-hidden group">
                     <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1400&q=80" alt="Instructor Hero" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/85 via-slate-900/50 to-transparent flex items-center px-12">
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/85 via-slate-900/50 to-transparent flex items-center px-6 lg:px-12">
                         <div>
-                            <p className="text-xs font-black uppercase tracking-widest text-indigo-300 mb-2">Instructor ID: {user?.userId}</p>
-                            <h1 className="text-4xl font-black text-white leading-tight">Welcome back,<br /><span className="text-indigo-300">{user?.name} 👨‍🏫</span></h1>
+                            <p className="text-[10px] lg:text-xs font-black uppercase tracking-widest text-indigo-300 mb-1 lg:mb-2">Instructor ID: {user?.userId}</p>
+                            <h1 className="text-2xl lg:text-4xl font-black text-white leading-tight">Welcome back,<br /><span className="text-indigo-300">{user?.name} 👨‍🏫</span></h1>
                         </div>
                     </div>
                     <button onClick={() => setShowCreateModal(true)}
-                        className="absolute top-6 right-6 flex items-center gap-2 bg-white text-slate-900 font-black text-sm px-6 py-3 rounded-full shadow-xl hover:bg-indigo-600 hover:text-white transition-all">
-                        <Plus size={16} /> New Subject
+                        className="absolute top-4 lg:top-6 right-4 lg:right-6 flex items-center gap-2 bg-white text-slate-900 font-black text-xs lg:text-sm px-4 lg:px-6 py-2 lg:py-3 rounded-full shadow-xl hover:bg-indigo-600 hover:text-white transition-all">
+                        <Plus size={16} /> <span className="hidden sm:inline">New Subject</span>
                     </button>
                 </div>
 
                 {/* Stat Cards */}
-                <div className="grid grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5">
                     {[
                         { label: 'My Subjects', value: subjects.length, gradient: 'from-indigo-500 to-violet-600', emoji: '📚' },
                         { label: 'Total Students', value: totalStudents, gradient: 'from-emerald-400 to-teal-600', emoji: '🎓' },
                         { label: 'Total Quizzes', value: totalQuizzes, gradient: 'from-amber-400 to-orange-500', emoji: '🧠' },
                     ].map((s, i) => (
-                        <div key={i} className={`bg-gradient-to-br ${s.gradient} p-7 rounded-3xl text-white shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden`}>
-                            <div className="text-3xl mb-3">{s.emoji}</div>
-                            <p className="text-4xl font-black mb-1">{s.value}</p>
-                            <p className="text-sm text-white/75 font-semibold">{s.label}</p>
-                            <div className="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-white/10"></div>
+                        <div key={i} className={`bg-gradient-to-br ${s.gradient} p-6 lg:p-7 rounded-3xl text-white shadow-lg hover:-translate-y-1 transition-all duration-300 relative overflow-hidden`}>
+                            <div className="text-2xl lg:text-3xl mb-2 lg:mb-3">{s.emoji}</div>
+                            <p className="text-3xl lg:text-4xl font-black mb-1">{s.value}</p>
+                            <p className="text-xs lg:text-sm text-white/75 font-semibold">{s.label}</p>
+                            <div className="absolute -right-4 -bottom-4 w-20 lg:w-24 h-20 lg:h-24 rounded-full bg-white/10"></div>
                         </div>
                     ))}
                 </div>
