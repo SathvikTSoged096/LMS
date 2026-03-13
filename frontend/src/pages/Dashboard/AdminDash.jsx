@@ -19,19 +19,25 @@ const AdminDash = ({ currentView = 'overview' }) => {
     const [rankings, setRankings] = useState([]);
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [assignModal, setAssignModal] = useState({ open: false, instructor: null });
+    const [subjects, setSubjects] = useState([]);
+    const [selectedSubjectId, setSelectedSubjectId] = useState('');
+    const [assignLoading, setAssignLoading] = useState(false);
 
     useEffect(() => { fetchData(); }, []);
 
     const fetchData = async () => {
         try {
-            const [usersRes, ranksRes, actRes] = await Promise.all([
+            const [usersRes, ranksRes, actRes, subjectsRes] = await Promise.all([
                 api.get('/admin/users'),
                 api.get('/analytics/college-rankings'),
-                api.get('/admin/activity')
+                api.get('/admin/activity'),
+                api.get('/subjects')
             ]);
             setUsers(usersRes.data);
             setRankings(ranksRes.data);
             setActivities(actRes.data);
+            setSubjects(Array.isArray(subjectsRes.data) ? subjectsRes.data : subjectsRes.data.data || []);
         } catch (error) {
             console.error('Failed to fetch users', error);
         } finally {
@@ -113,6 +119,63 @@ const AdminDash = ({ currentView = 'overview' }) => {
         { month: 'Apr', users: users.length },
     ];
 
+    // --- Assign Subject Modal ---
+    const AssignSubjectModal = () => {
+        if (!assignModal.open) return null;
+        const handleAssign = async () => {
+            if (!selectedSubjectId) return;
+            setAssignLoading(true);
+            try {
+                await api.put(`/subjects/${selectedSubjectId}`, {
+                    instructor_id: assignModal.instructor._id
+                });
+                await fetchData();
+                setAssignModal({ open: false, instructor: null });
+                setSelectedSubjectId('');
+            } catch (err) {
+                console.error('Failed to assign subject', err);
+            } finally {
+                setAssignLoading(false);
+            }
+        };
+        return (
+            <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+                    <h3 className="text-xl font-black text-slate-900 mb-1">Assign Subject</h3>
+                    <p className="text-sm text-slate-400 mb-6">
+                        Assigning to <span className="font-bold text-indigo-600">{assignModal.instructor?.name}</span>
+                    </p>
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 block mb-2">Select Subject</label>
+                    <select
+                        value={selectedSubjectId}
+                        onChange={e => setSelectedSubjectId(e.target.value)}
+                        className="w-full px-4 py-3 rounded-2xl border border-slate-200 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-400 outline-none mb-6"
+                    >
+                        <option value="">-- Choose a subject --</option>
+                        {subjects.map(s => (
+                            <option key={s.subject_id} value={s.subject_id}>
+                                {s.subject_name}{s.instructor_id ? ' (already assigned)' : ''}
+                            </option>
+                        ))}
+                    </select>
+                    <div className="flex gap-3 justify-end">
+                        <button
+                            onClick={() => { setAssignModal({ open: false, instructor: null }); setSelectedSubjectId(''); }}
+                            className="px-5 py-2.5 rounded-2xl text-sm font-bold text-slate-500 border border-slate-200 hover:bg-slate-50 transition-all">
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleAssign}
+                            disabled={!selectedSubjectId || assignLoading}
+                            className="px-5 py-2.5 rounded-2xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+                            {assignLoading ? 'Assigning...' : 'Assign'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     // --- Shared table ---
     const renderUserTable = (filteredUsers, title) => (
         <div className="space-y-6 animate-fade-in-up">
@@ -125,7 +188,7 @@ const AdminDash = ({ currentView = 'overview' }) => {
                     <table className="min-w-full divide-y divide-slate-100">
                         <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
                             <tr>
-                                {['Name', 'Email', 'Role', 'Status', 'Action'].map(h => (
+                                {['Name', 'Email', 'Role', 'Status', 'Action', 'Subject'].map(h => (
                                     <th key={h} className="px-4 lg:px-6 py-4 text-left text-[10px] lg:text-xs font-black text-slate-400 uppercase tracking-widest">{h}</th>
                                 ))}
                             </tr>
@@ -183,12 +246,24 @@ const AdminDash = ({ currentView = 'overview' }) => {
                                             </div>
                                         )}
                                     </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        {u.role === 'INSTRUCTOR' ? (
+                                            <button
+                                                onClick={() => { setAssignModal({ open: true, instructor: u }); setSelectedSubjectId(''); }}
+                                                className="text-xs font-bold px-4 py-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all">
+                                                Assign Subject
+                                            </button>
+                                        ) : (
+                                            <span className="text-xs text-slate-300 font-medium">—</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             </div>
+            <AssignSubjectModal />
         </div>
     );
 
