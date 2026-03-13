@@ -17,9 +17,11 @@ class EmailService {
                 },
             });
 
-            console.log(`📧 Email service initialized for: ${process.env.SMTP_USER}`);
+            await this.transporter.verify();
+            console.log(`📧 Email service initialized and verified for: ${process.env.SMTP_USER}`);
         } catch (error) {
-            console.error('Failed to initialize email service:', error);
+            console.error('❌ Failed to initialize/verify email service:', error);
+            this.transporter = null;
         }
     }
 

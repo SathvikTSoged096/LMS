@@ -37,11 +37,15 @@ const registerUser = async (req, res) => {
             await userExists.save();
 
             const emailService = require('../services/emailService');
-            emailService.sendVerificationEmail(userExists.email, userExists.name, verificationCode);
+            try {
+                await emailService.sendVerificationEmail(userExists.email, userExists.name, verificationCode);
+            } catch (err) {
+                console.error('Failed to send verification email:', err);
+            }
 
             return res.status(200).json({
                 success: true,
-                message: "Verification code resent to email.",
+                message: "Verification code sent to email.",
                 email: userExists.email
             });
         }
@@ -64,9 +68,14 @@ const registerUser = async (req, res) => {
         });
 
         if (user) {
-            // 🎉 Send Verification Email asynchronously
+            // 🎉 Send Verification Email
             const emailService = require('../services/emailService');
-            emailService.sendVerificationEmail(user.email, user.name, verificationCode);
+            try {
+                await emailService.sendVerificationEmail(user.email, user.name, verificationCode);
+            } catch (err) {
+                console.error('Failed to send verification email:', err);
+                // We still respond with 201 because the user was created
+            }
 
             // Respond with success but NO TOKEN YET
             res.status(201).json({
@@ -105,9 +114,13 @@ const verifyEmail = async (req, res) => {
         user.verificationCode = null;
         await user.save();
 
-        // 🎉 Send Welcome Email asynchronously
+        // 🎉 Send Welcome Email
         const emailService = require('../services/emailService');
-        emailService.sendWelcomeEmail(user.email, user.name);
+        try {
+            await emailService.sendWelcomeEmail(user.email, user.name);
+        } catch (err) {
+            console.error('Failed to send welcome email:', err);
+        }
 
         res.json({
             _id: String(user.id),
