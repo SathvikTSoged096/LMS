@@ -1,23 +1,37 @@
 import { useState } from "react";
 
-const RAG_API = "https://ragnew-seven.vercel.app";
+const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const ChatBot = ({ subjectId }) => {
     const [question, setQuestion] = useState("");
     const [answer, setAnswer] = useState("");
     const [loading, setLoading] = useState(false);
 
+    const getToken = () => {
+        try {
+            const userInfo = localStorage.getItem("userInfo");
+            return userInfo ? JSON.parse(userInfo).token : null;
+        } catch { return null; }
+    };
+
     const askQuestion = async () => {
         if (!question.trim()) return;
         setLoading(true);
         try {
-            const res = await fetch(`${RAG_API}/ask`, {
+            const res = await fetch(`${BACKEND_URL}/ai/rag-ask`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ question, subject_id: subjectId })
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${getToken()}`
+                },
+                body: JSON.stringify({
+                    question: question,
+                    subject_id: subjectId
+                })
             });
+
             const data = await res.json();
-            setAnswer(data.answer);
+            setAnswer(data.answer || "No answer returned.");
         } catch (err) {
             setAnswer("Error getting response");
         }

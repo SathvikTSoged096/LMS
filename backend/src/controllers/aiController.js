@@ -1,8 +1,10 @@
 const { OpenAI } = require('openai');
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY || 'dummy_key', // Ensure app doesn't crash if omitted during dev
+    apiKey: process.env.OPENAI_API_KEY || 'dummy_key',
 });
+
+const RAG_BASE_URL = 'https://ragnew-seven.vercel.app';
 
 // @desc    Ask a question contextually locked to subject section
 // @route   POST /api/ai/ask
@@ -16,7 +18,6 @@ const askContextualQuestion = async (req, res) => {
         }
 
         if (!process.env.OPENAI_API_KEY) {
-            // Return a mocked response for dev if no real key is provided
             return res.json({
                 answer: `[Mock AI Response]: You asked "${query}" about the context provided. Since the OPENAI_API_KEY is not set in the .env, this is a simulated response. In production, the RAG would analyze the ${context.length} characters of context and answer accordingly.`
             });
@@ -36,7 +37,7 @@ ${context}
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: query }
             ],
-            temperature: 0.1, // Low temp for strictly factual info
+            temperature: 0.1,
             max_tokens: 300,
         });
 
@@ -47,6 +48,40 @@ ${context}
     }
 };
 
+// @desc    Proxy: Ask RAG chatbot a question (bypasses browser CORS)
+// @route   POST /api/ai/rag-ask
+// @access  Private/Student
+const ragAsk = async (req, res) => {
+    try {
+        const response = await fetch(`${RAG_BASE_URL}/ask`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(req.body),
+        });
+        const data = await response.json();
+        res.status(response.status).json(data);
+    } catch (error) {
+        console.error('RAG ask proxy error:', error);
+        res.status(500).json({ answer: 'Error connecting to RAG service.' });
+    }
+};
+
+// @desc    Proxy: Trigger RAG database reload after content update (bypasses browser CORS)
+// @route   POST /api/ai/rag-reload
+// @access  Private/Instructor
+const ragReloadDb = async (req, res) => {
+    try {
+        const response = await fetch(`${RAG_BASE_URL}/reload-db`, { method: 'POST' });
+        const text = await response.text();
+        res.status(response.status).send(text);
+    } catch (error) {
+        console.error('RAG reload proxy error:', error);
+        res.status(500).json({ message: 'Error triggering RAG reload.' });
+    }
+};
+
 module.exports = {
-    askContextualQuestion
+    askContextualQuestion,
+    ragAsk,
+    ragReloadDb,
 };
