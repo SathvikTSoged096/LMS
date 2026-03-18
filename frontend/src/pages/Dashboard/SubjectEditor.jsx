@@ -84,6 +84,8 @@ const SubjectEditor = () => {
         try {
             await api.put(`/subjects/${id}`, { units: subject.units });
             alert('Subject curriculum saved successfully!');
+            // Refresh RAG chatbot knowledge base
+            fetch("https://ragnew-seven.vercel.app/reload-db", { method: "POST" }).catch(() => {});
         } catch (error) {
             console.error('Error saving subject', error);
             const errMsg = error.response?.data?.message || error.message || 'Unknown network error';
@@ -155,6 +157,8 @@ const SubjectEditor = () => {
             const newUnits = [...subject.units];
             newUnits[unitIndex].chapters[chapterIndex].sections[sectionIndex].paragraphs.push(`[PDF] ${data.url}`);
             setSubject({ ...subject, units: newUnits });
+            // Refresh RAG chatbot knowledge base
+            fetch("https://ragnew-seven.vercel.app/reload-db", { method: "POST" }).catch(() => {});
         } catch (error) {
             console.error('Error uploading file', error);
             alert('Failed to upload PDF: ' + (error.response?.data?.message || error.message));
@@ -196,6 +200,8 @@ const SubjectEditor = () => {
             resetForm();
             const { data } = await api.get(`/quizzes/subject/${id}`);
             setQuizzes(data);
+            // Refresh RAG chatbot knowledge base
+            fetch("https://ragnew-seven.vercel.app/reload-db", { method: "POST" }).catch(() => {});
         } catch (error) {
             console.error('Error saving quiz', error);
             alert(error.response?.data?.message || 'Failed to save quiz.');

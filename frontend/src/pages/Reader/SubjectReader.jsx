@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Book, ArrowLeft, MessageSquare, Menu, X } fr
 import MathJaxRenderer from '../../components/renderers/MathJaxRenderer';
 import SpiceRenderer from '../../components/renderers/SpiceRenderer';
 import AiChatbox from '../../components/chat/AiChatbox';
+import ChatBot from '../../components/ChatBot';
 
 // Converts any YouTube URL format to the embed URL required by iframes
 const toEmbedUrl = (url) => {
@@ -359,6 +360,13 @@ const SubjectReader = () => {
                                 onClose={() => setShowChat(false)}
                             />
                         )}
+
+                        {/* RAG Chatbot */}
+                        <div className="px-4 sm:px-16 lg:px-24 pb-10">
+                            <div className="max-w-3xl mx-auto">
+                                <ChatBot subjectId={subject._id} />
+                            </div>
+                        </div>
                     </>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
